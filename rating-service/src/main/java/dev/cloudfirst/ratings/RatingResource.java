@@ -10,17 +10,24 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 @Path("/rating")
 public class RatingResource {
     Map<Integer, Rating> ratings = new HashMap<>();
 
+    @ConfigProperty(name = "cloudfirst.service.delay")
+    long pause;
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{productId}")
-    public Rating hello(@PathParam("productId") int productId) {
+    public Rating hello(@PathParam("productId") int productId) throws InterruptedException {
         //get rating and return
 
-        return ratings.get(productId);
+        Thread.sleep(pause * 1000l);
+
+        return ratings.getOrDefault(productId, new Rating(productId));
     }
 
     @POST
