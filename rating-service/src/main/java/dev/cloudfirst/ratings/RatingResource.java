@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -22,10 +23,12 @@ public class RatingResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{productId}")
-    public Rating hello(@PathParam("productId") int productId) throws InterruptedException {
+    public Rating hello(@PathParam("productId") int productId, @HeaderParam("plan-type") String planType) throws InterruptedException {
         //get rating and return
 
-        Thread.sleep(pause * 1000l);
+        if(!"gold".equals(planType)) {
+            Thread.sleep(pause * 1000l);
+        }        
 
         return ratings.getOrDefault(productId, new Rating(productId));
     }
