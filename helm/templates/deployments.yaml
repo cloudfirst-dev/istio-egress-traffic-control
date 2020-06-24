@@ -1,0 +1,182 @@
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: rating-service
+  namespace: {{ .Values.rating_service_name }}
+  labels:
+    app: rating-service
+    app.kubernetes.io/component: rating-service
+    app.kubernetes.io/instance: rating-service
+    app.kubernetes.io/part-of: rating-service-app
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: 'quay.io/cloudfirst/rating-service:latest'
+      generation: 2
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Local
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: product-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: product-service
+    app.kubernetes.io/component: product-service
+    app.kubernetes.io/instance: product-service
+    app.kubernetes.io/part-of: product-service-app
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: 'quay.io/cloudfirst/product-service:latest'
+      generation: 2
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Local
+---
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: rating-service
+  namespace: {{ .Values.rating_service_name }}
+  labels:
+    app: rating-service
+    app.kubernetes.io/component: rating-service
+    app.kubernetes.io/instance: rating-service
+    app.kubernetes.io/part-of: rating-service-app
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - rating-service
+        from:
+          kind: ImageStreamTag
+          name: 'rating-service:latest'
+    - type: ConfigChange
+  replicas: 1
+  revisionHistoryLimit: 10
+  test: false
+  selector:
+    app: rating-service
+    deploymentconfig: rating-service
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: rating-service
+        deploymentconfig: rating-service
+        maistra.io/expose-route: 'true'
+    spec:
+      containers:
+        - name: rating-service
+          image: ' '
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8443
+              protocol: TCP
+            - containerPort: 8778
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+---
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: product-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: product-service
+    app.kubernetes.io/component: product-service
+    app.kubernetes.io/instance: product-service
+    app.kubernetes.io/part-of: product-service-app
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - product-service
+        from:
+          kind: ImageStreamTag
+          name: 'product-service:latest'
+    - type: ConfigChange
+  replicas: 1
+  revisionHistoryLimit: 10
+  test: false
+  selector:
+    app: product-service
+    deploymentconfig: product-service
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: product-service
+        deploymentconfig: product-service
+      annotations:
+        sidecar.istio.io/inject: 'true'
+    spec:
+      containers:
+        - name: product-service
+          image: ' '
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8443
+              protocol: TCP
+            - containerPort: 8778
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: RATING_URL
+              value: "http://rating-rating-service.apps.{{ .Values.route_hostname }}"
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler

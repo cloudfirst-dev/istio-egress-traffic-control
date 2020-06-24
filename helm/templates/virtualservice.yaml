@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reviews-route
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - "rating-rating-service.apps.{{ .Values.route_hostname }}"
+  http:
+  - match:
+    - headers:
+        plan-type:
+          exact: gold
+    route:
+    - destination:
+        host: "rating-rating-service.apps.{{ .Values.route_hostname }}"
+        subset: gold
+  - match:
+    - headers:
+        plan-type:
+          exact: silver
+    route:
+    - destination:
+        host: "rating-rating-service.apps.{{ .Values.route_hostname }}"
+        subset: silver
+  - route:
+    - destination:
+        host: "rating-rating-service.apps.{{ .Values.route_hostname }}"
+        subset: bronze
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: product-service-route
+  namespace: {{ .Release.Namespace }}
+spec:
+  gateways:
+  - {{ .Release.Namespace }}/product-service-gateway
+  hosts:
+  - "product-service.apps.{{ .Values.route_hostname }}"
+  http:
+  - route:
+    - destination:
+        host: "product-service"
+        port:
+          number: 8080

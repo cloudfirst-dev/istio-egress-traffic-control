@@ -1,0 +1,5 @@
+control_plane_namespace: istio-system
+control_plane_name: basic-install
+# this service is in a different namespace and is acting like it is external to the cluster and mesh (it is not part of the mesh)
+rating_service_name: rating-service
+route_hostname: example.com

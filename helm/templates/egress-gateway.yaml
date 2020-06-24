@@ -1,0 +1,28 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: destination-rule-for-ratings
+  namespace: {{ .Release.Namespace }}
+spec:
+  host: "rating-rating-service.apps.{{ .Values.route_hostname }}"
+  subsets:
+  - name: gold
+  - name: silver
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 20
+        http:
+          maxRequestsPerConnection: 1
+  - name: bronze
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 1
+        http:
+          maxRequestsPerConnection: 1
+      outlierDetection:
+        consecutiveErrors: 1
+        interval: 1s
+        baseEjectionTime: 3m
+        maxEjectionPercent: 100

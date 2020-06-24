@@ -1,0 +1,50 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rating-service
+  namespace: {{ .Values.rating_service_name }}
+  labels:
+    app: rating-service
+    app.kubernetes.io/component: rating-service
+    app.kubernetes.io/instance: rating-service
+    app.kubernetes.io/name: ''
+    app.kubernetes.io/part-of: rating-service-app
+    app.openshift.io/runtime: ''
+    app.openshift.io/runtime-version: latest
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: rating-service
+    deploymentconfig: rating-service
+  type: ClusterIP
+  sessionAffinity: None
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: product-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: product-service
+    app.kubernetes.io/component: product-service
+    app.kubernetes.io/instance: product-service
+    app.kubernetes.io/name: ''
+    app.kubernetes.io/part-of: product-service-app
+    app.openshift.io/runtime: ''
+    app.openshift.io/runtime-version: latest
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: product-service
+    deploymentconfig: product-service
+  type: ClusterIP
+  sessionAffinity: None

@@ -1,0 +1,22 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: rating
+  namespace: rating-service
+  labels:
+    app: rating-service
+    app.kubernetes.io/component: rating-service
+    app.kubernetes.io/instance: rating-service
+    app.kubernetes.io/name: ''
+    app.kubernetes.io/part-of: rating-service-app
+    app.openshift.io/runtime: ''
+    app.openshift.io/runtime-version: latest
+spec:
+  host: "rating-rating-service.apps.{{ .Values.route_hostname }}"
+  to:
+    kind: Service
+    name: rating-service
+    weight: 100
+  port:
+    targetPort: http
+  wildcardPolicy: None

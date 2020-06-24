@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: rating-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - "rating-rating-service.apps.{{ .Values.route_hostname }}"
+  ports:
+  - number: 80
+    name: http
+    protocol: HTTP
+  resolution: DNS
+  location: MESH_EXTERNAL
